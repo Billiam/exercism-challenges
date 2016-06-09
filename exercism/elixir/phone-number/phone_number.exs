@@ -1,33 +1,26 @@
 defmodule Phone do
   defp normalize(raw) do
-    raw |> parse |> cleanup |> validate
+    raw |> parse |> strip_international_code |> validate
   end
 
   defp parse(raw) do
-    String.split(raw, "") |> Enum.reduce([], &parse_char/2) 
+    String.split(raw, "") |> Enum.reduce([], &parse_char/2) |> Enum.reverse
   end
 
-  defp parse_char(_, :invalid), do: :invalid
+  defp parse_char(_, [:invalid]=acc), do: acc
   defp parse_char(char, acc) do
     cond do
       Regex.match?(~r/\p{N}/u, char) -> [char | acc]
-      Regex.match?(~r/\p{L}/u, char) -> :invalid
+      Regex.match?(~r/\p{L}/u, char) -> [:invalid]
       true -> acc
     end
   end
   
-  defp cleanup(:invalid), do: :invalid
-  defp cleanup(list) do
-    list = Enum.reverse(list)
-    
-    cond do
-      length(list) === 11 and List.first(list) === "1" -> Enum.drop(list, 1)
-      length(list) === 10 -> list
-      true -> :invalid
-    end
-  end
+  defp strip_international_code([head | tail]) when length(tail) == 10 and head == "1", do: tail
+  defp strip_international_code(list) when length(list) == 10, do: list
+  defp strip_international_code(_), do: [:invalid]
   
-  defp validate(:invalid), do: List.duplicate("0", 10)
+  defp validate([:invalid]), do: List.duplicate("0", 10)
   defp validate(list), do: list
   
   defp format_plain(list), do: Enum.join(list)

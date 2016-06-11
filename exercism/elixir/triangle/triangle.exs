@@ -8,6 +8,7 @@ defmodule Triangle do
   def kind(a, b, c) do
     [a, b, c]
     |> validate
+    |> unique_lengths
     |> identify
   end
   
@@ -17,6 +18,11 @@ defmodule Triangle do
       invalid_lengths?(lengths) -> { :error, "side lengths violate triangle inequality" }
       true -> lengths
     end
+  end
+  
+  defp unique_lengths({:error, _} = error), do: error
+  defp unique_lengths(lengths) do
+    lengths |> Enum.uniq |> length
   end
   
   defp zero_lengths?(lengths) do
@@ -30,8 +36,8 @@ defmodule Triangle do
   end
   
   defp identify({:error, _} = error), do: error
-  defp identify([a, b, c]) when a == b and a == c, do: {:ok, :equilateral}
-  defp identify([a, b, c]) when a == b or a == c or b == c, do: {:ok, :isosceles}
-  defp identify(_), do: {:ok, :scalene}
+  defp identify(1), do: {:ok, :equilateral}
+  defp identify(2), do: {:ok, :isosceles}
+  defp identify(3), do: {:ok, :scalene}
 end
 

@@ -23,7 +23,7 @@ defmodule Atbash do
     |> String.replace(~r/\W/, "")
   end
   
-  defp encode_char(char) when char > 96 and char < 124 do
+  defp encode_char(char) when char in ?a..?z do
     abs(char - 123) + 96
   end
   defp encode_char(char), do: char
